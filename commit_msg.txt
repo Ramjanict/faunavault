@@ -1,7 +1,0 @@
-feat: integrate CommonSelect dropdown and update README with credentials and live URLs
-
-- Installed @radix-ui/react-select and added Shadcn UI select primitives
-- Implemented reusable CommonSelect component for all dropdowns
-- Updated AddAnimalModal and mobile Header filter to use CommonSelect
-- Updated README.md with live deployment links (Vercel frontend, Render backend, Swagger UI)
-- Documented full database and Cloudinary credentials in README.md
