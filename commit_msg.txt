@@ -1,7 +1,0 @@
-fix: resolve dist output path and Render deployment configuration
-
-- Set rootDir to src in backend tsconfig.json so dist/main.js is generated at dist/main.js
-- Excluded prisma/seed.ts from compilation root
-- Bound NestJS server to 0.0.0.0 for cloud reverse proxy support
-- Updated start:prod script to node dist/main.js
-- Added render.yaml blueprint with proper build and start commands
