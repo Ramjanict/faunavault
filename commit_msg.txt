@@ -1,12 +1,7 @@
-feat: redesign frontend with modern glassmorphism UI
+fix: resolve dist output path and Render deployment configuration
 
-- Added animated gradient background mesh and subtle noise overlay
-- Glassmorphism navbar with frosted-glass backdrop blur effects
-- Card hover glow rings with lift animation and staggered fade-in
-- Drag-and-drop image upload zone with live preview in AddAnimalModal
-- Indigo gradient theme for AddCategoryModal
-- Shimmer skeleton loading animations
-- Stats ribbon showing animal and category counts
-- Responsive mobile category drawer with glass styling
-- Keyboard-accessible modals with Escape to close and body scroll lock
-- Tech-branded footer
+- Set rootDir to src in backend tsconfig.json so dist/main.js is generated at dist/main.js
+- Excluded prisma/seed.ts from compilation root
+- Bound NestJS server to 0.0.0.0 for cloud reverse proxy support
+- Updated start:prod script to node dist/main.js
+- Added render.yaml blueprint with proper build and start commands
