@@ -1,8 +1,39 @@
-# Animal Vault — Modern Full-Stack Platform (v2.0)
+# FaunaVault — Modern Animal Platform (v2.0)
 
-A high-performance animal management and categorization web application upgraded with modern architecture:
+A high-performance animal catalog and categorization web platform upgraded with modern full-stack architecture:
+- **Frontend**: [Next.js](https://nextjs.org/) App Router (React 18/19), TypeScript, [Tailwind CSS](https://tailwindcss.com/), Radix UI (`CommonSelect`), and [Lucide Icons](https://lucide.dev/).
 - **Backend**: [NestJS](https://nestjs.com/) with TypeScript, modular dependency injection, [Prisma ORM](https://www.prisma.io/), [Neon PostgreSQL](https://neon.tech/), and [Cloudinary](https://cloudinary.com/) for media management.
-- **Frontend**: [Next.js](https://nextjs.org/) App Router with TypeScript, [Tailwind CSS](https://tailwindcss.com/), and [Lucide Icons](https://lucide.dev/).
+
+---
+
+## 🌐 Live Deployments
+
+| Service | Platform | URL |
+| :--- | :--- | :--- |
+| **Frontend Application** | **Vercel** | [https://faunavault.vercel.app](https://faunavault.vercel.app) |
+| **Backend REST API** | **Render** | [https://faunavault.onrender.com](https://faunavault.onrender.com) |
+| **Interactive API Docs** | **Swagger UI** | [https://faunavault.onrender.com/api/docs](https://faunavault.onrender.com/api/docs) |
+
+---
+
+## 🔑 Project & Cloud Credentials
+
+### 1. Database (Neon Serverless PostgreSQL)
+- **Provider**: [Neon](https://neon.tech/)
+- **Connection URI**:
+  ```text
+  postgresql://neondb_owner:npg_K29uVNgsSinL@ep-long-surf-be8i6erx-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+  ```
+
+### 2. Media CDN (Cloudinary)
+- **Provider**: [Cloudinary](https://cloudinary.com/)
+- **Cloud Name**: `ramjan`
+- **API Key**: `839226347835865`
+- **API Secret**: `JrKNyYxIiwOtyuTYa6ykVwEG-gk`
+- **Environment Variable Format**:
+  ```text
+  CLOUDINARY_URL=cloudinary://839226347835865:JrKNyYxIiwOtyuTYa6ykVwEG-gk@ramjan
+  ```
 
 ---
 
@@ -12,6 +43,7 @@ A high-performance animal management and categorization web application upgraded
                           ┌─────────────────────────┐
                           │   Next.js (App Router)  │
                           │   TypeScript + Tailwind │
+                          │   Radix UI CommonSelect │
                           └───────────┬─────────────┘
                                       │ REST API / JSON / FormData
                                       ▼
@@ -29,18 +61,19 @@ A high-performance animal management and categorization web application upgraded
 ```
 
 ### Backend (`/backend`)
-- **Framework**: NestJS (Node.js TypeScript framework)
-- **Database**: Neon Serverless PostgreSQL (pooled connection)
-- **ORM**: Prisma ORM with schema migrations & seeding
-- **Cloud Storage**: Cloudinary (auto format & quality optimization)
-- **API Documentation**: OpenAPI / Swagger UI at `/api/docs`
+- **Framework**: NestJS (Modular Architecture)
+- **Database**: Neon Serverless PostgreSQL with connection pooling
+- **ORM**: Prisma ORM with migrations and automated category seed
+- **Cloud Storage**: Cloudinary (auto-format WebP/AVIF and quality optimization)
+- **API Documentation**: OpenAPI 3.0 / Swagger UI hosted at `/api/docs`
 - **Validation**: `class-validator` & `class-transformer`
 
 ### Frontend (`/frontend`)
-- **Framework**: Next.js App Router (React 18/19, TypeScript)
-- **Styling**: Tailwind CSS with dark theme aesthetics
-- **Image Optimization**: Next.js `<Image />` with Cloudinary remote pattern
-- **User Feedback**: `react-hot-toast` notifications
+- **Framework**: Next.js App Router (React, TypeScript)
+- **Dropdown Component**: Reusable `CommonSelect` built with `@radix-ui/react-select`
+- **Styling**: Tailwind CSS with modern glassmorphism aesthetic and animated background mesh
+- **Image Optimization**: Next.js `<Image />` configured with Cloudinary remote patterns
+- **Feedback**: `react-hot-toast` notifications
 
 ---
 
@@ -50,51 +83,89 @@ A high-performance animal management and categorization web application upgraded
 - **Node.js**: v18+ (tested on Node v24)
 - **npm** or **pnpm**
 
-### 2. Backend Setup
+---
+
+### 2. Backend Setup & Local Run
+
 ```bash
 cd backend
 
 # Install dependencies
 npm install
 
-# Push database schema to Neon PostgreSQL
+# Generate Prisma Client & Sync Neon PostgreSQL schema
+npm run prisma:generate
 npm run prisma:push
 
 # Seed default categories (Land Animal, Bird, Fish, Insect)
 npm run prisma:seed
 
-# Start backend in development mode (runs on http://localhost:5000)
+# Start backend server in development mode (runs on http://localhost:5000)
 npm run start:dev
+
+# Or run in production mode
+npm run build
+npm run start:prod
 ```
 
-- **API Documentation (Swagger UI)**: `http://localhost:5000/api/docs`
-
-#### Environment Variables (`backend/.env`)
+#### Backend Environment Variables (`backend/.env`)
 ```env
 DATABASE_URL="postgresql://neondb_owner:npg_K29uVNgsSinL@ep-long-surf-be8i6erx-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 CLOUDINARY_CLOUD_NAME="ramjan"
 CLOUDINARY_API_KEY="839226347835865"
 CLOUDINARY_API_SECRET="JrKNyYxIiwOtyuTYa6ykVwEG-gk"
 PORT=5000
-FRONTEND_URL="http://localhost:3000"
+FRONTEND_URL="https://faunavault.vercel.app"
 ```
 
 ---
 
-### 3. Frontend Setup
+### 3. Frontend Setup & Local Run
+
 ```bash
 cd frontend
 
 # Install dependencies
 npm install
 
-# Start development server (runs on http://localhost:3000)
+# Start Next.js development server (runs on http://localhost:3000)
 npm run dev
+
+# Or build for production
+npm run build
+npm run start
 ```
 
-#### Environment Variables (`frontend/.env.local`)
+#### Frontend Environment Variables (`frontend/.env.local` or Vercel Settings)
 ```env
+# For local development:
 NEXT_PUBLIC_API_URL="http://localhost:5000"
+
+# For production deployment on Vercel:
+# NEXT_PUBLIC_API_URL="https://faunavault.onrender.com"
+```
+
+---
+
+## 🧩 Reusable `CommonSelect` Dropdown Component
+
+All dropdowns across the application use the `CommonSelect` component powered by Radix UI:
+
+```tsx
+import CommonSelect, { SelectOption } from "@/components/ui/CommonSelect";
+
+const options: SelectOption<string>[] = [
+  { label: "Option 1", value: "opt1" },
+  { label: "Option 2", value: "opt2" },
+];
+
+<CommonSelect
+  value={selectedValue}
+  item={options}
+  w="100%"
+  onValueChange={(val) => setSelectedValue(val)}
+  placeholder="Select an option"
+/>
 ```
 
 ---

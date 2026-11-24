@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Menu, X, Plus, Search, Layers, PawPrint, Sparkles } from 'lucide-react';
 import { Category } from '../types';
+import CommonSelect, { SelectOption } from './ui/CommonSelect';
 
 interface HeaderProps {
   categories: Category[];
@@ -26,6 +27,14 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAddCategory,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const mobileCategoryOptions: SelectOption<string>[] = [
+    { label: `All Categories (${totalAnimalCount})`, value: 'all' },
+    ...categories.map((c) => ({
+      label: `${c.name}${c._count?.animals !== undefined ? ` (${c._count.animals})` : ''}`,
+      value: c.id,
+    })),
+  ];
 
   return (
     <header className="relative z-30 w-full flex flex-col gap-5 pt-6 pb-2">
@@ -170,31 +179,17 @@ export const Header: React.FC<HeaderProps> = ({
           <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 px-1">
             Filter by Category
           </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => { onSelectCategory('all'); setMobileMenuOpen(false); }}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all btn-press ${
-                selectedCategoryId === 'all'
-                  ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/25'
-                  : 'glass-light text-zinc-300 hover:text-white'
-              }`}
-            >
-              All ({totalAnimalCount})
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => { onSelectCategory(cat.id); setMobileMenuOpen(false); }}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all btn-press ${
-                  selectedCategoryId === cat.id
-                    ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/25'
-                    : 'glass-light text-zinc-300 hover:text-white'
-                }`}
-              >
-                {cat.name} {cat._count?.animals !== undefined ? `(${cat._count.animals})` : ''}
-              </button>
-            ))}
-          </div>
+          <CommonSelect
+            value={selectedCategoryId}
+            item={mobileCategoryOptions}
+            w="100%"
+            onValueChange={(val) => {
+              onSelectCategory(val);
+              setMobileMenuOpen(false);
+            }}
+            placeholder="Select a category"
+            className="w-full"
+          />
         </div>
       )}
     </header>

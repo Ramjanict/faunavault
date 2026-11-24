@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, UploadCloud, Sparkles, ImageIcon, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Category } from '../types';
+import CommonSelect, { SelectOption } from './ui/CommonSelect';
 
 interface AddAnimalModalProps {
   isOpen: boolean;
@@ -25,6 +26,11 @@ export const AddAnimalModal: React.FC<AddAnimalModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const categoryOptions: SelectOption<string>[] = categories.map((cat) => ({
+    label: cat.name,
+    value: cat.id,
+  }));
 
   useEffect(() => {
     if (categories.length > 0 && !categoryId) {
@@ -139,19 +145,15 @@ export const AddAnimalModal: React.FC<AddAnimalModalProps> = ({
             <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
               Category
             </label>
-            <select
+            <CommonSelect
               value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              required
+              item={categoryOptions}
+              w="100%"
+              onValueChange={(val) => setCategoryId(val)}
               disabled={loading}
-              className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-zinc-800/80 hover:border-zinc-700 focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/15 text-sm text-white outline-none transition-all duration-300 cursor-pointer"
-            >
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id} className="bg-zinc-900 text-white">
-                  {cat.name}
-                </option>
-              ))}
-            </select>
+              placeholder="Select a category"
+              className="w-full"
+            />
           </div>
 
           {/* Image Upload Zone */}
