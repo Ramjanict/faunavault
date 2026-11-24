@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, UploadCloud, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { X, UploadCloud, Sparkles, ImageIcon, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Category } from '../types';
 
@@ -23,6 +23,7 @@ export const AddAnimalModal: React.FC<AddAnimalModalProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -37,62 +38,46 @@ export const AddAnimalModal: React.FC<AddAnimalModalProps> = ({
     };
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
     }
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
   }, [isOpen, onClose]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select an image file (PNG, JPG, WEBP, etc.)');
-        return;
-      }
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    if (file) processFile(file);
+  };
+
+  const processFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
     }
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    setDragOver(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please drop a valid image file');
-        return;
-      }
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
+    if (file) processFile(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = animalName.trim();
-    if (!trimmed) {
-      toast.error('Please provide an animal name');
-      return;
-    }
-    if (!categoryId) {
-      toast.error('Please select a category');
-      return;
-    }
-    if (!selectedFile) {
-      toast.error('Please upload an image for the animal');
-      return;
-    }
+    if (!trimmed) { toast.error('Please provide an animal name'); return; }
+    if (!categoryId) { toast.error('Please select a category'); return; }
+    if (!selectedFile) { toast.error('Please upload an image'); return; }
 
     try {
       setLoading(true);
-      await onSubmit({
-        name: trimmed,
-        categoryId,
-        file: selectedFile,
-      });
-      // Reset form
-      setAnimalName('');
-      setSelectedFile(null);
-      setPreviewUrl(null);
+      await onSubmit({ name: trimmed, categoryId, file: selectedFile });
+      setAnimalName(''); setSelectedFile(null); setPreviewUrl(null);
       onClose();
     } catch (err: any) {
       toast.error(err.message || 'Failed to upload animal');
@@ -104,45 +89,54 @@ export const AddAnimalModal: React.FC<AddAnimalModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+
+      {/* Modal */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-lg glass rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/40 max-h-[90vh] overflow-y-auto animate-fadeInScale"
+      >
+        {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+          className="absolute top-4 right-4 p-2 rounded-xl hover:bg-white/[0.06] text-zinc-500 hover:text-white transition"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <Sparkles className="w-6 h-6" />
+        {/* Header */}
+        <div className="flex items-center gap-3.5 mb-7">
+          <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-500/15 to-teal-500/10 border border-emerald-500/20">
+            <Sparkles className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white capitalize">Add Animal</h2>
-            <p className="text-xs text-zinc-400">Upload animal with Cloudinary & Neon DB</p>
+            <h2 className="text-xl font-bold text-white">Add New Animal</h2>
+            <p className="text-xs text-zinc-500 mt-0.5">Upload to Cloudinary CDN</p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {/* Animal Name */}
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5 uppercase tracking-wider">
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
               Animal Name
             </label>
             <input
               type="text"
               value={animalName}
               onChange={(e) => setAnimalName(e.target.value)}
-              placeholder="e.g. Royal Bengal Tiger, Bald Eagle"
+              placeholder="e.g. Royal Bengal Tiger"
               required
               disabled={loading}
-              className="w-full px-4 py-3 rounded-xl bg-zinc-800/80 border border-zinc-700/60 text-white placeholder-zinc-500 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition text-sm"
+              className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-zinc-800/80 hover:border-zinc-700 focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/15 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-300"
             />
           </div>
 
           {/* Category Select */}
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5 uppercase tracking-wider">
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
               Category
             </label>
             <select
@@ -150,7 +144,7 @@ export const AddAnimalModal: React.FC<AddAnimalModalProps> = ({
               onChange={(e) => setCategoryId(e.target.value)}
               required
               disabled={loading}
-              className="w-full px-4 py-3 rounded-xl bg-zinc-800/80 border border-zinc-700/60 text-white outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition text-sm cursor-pointer"
+              className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-zinc-800/80 hover:border-zinc-700 focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/15 text-sm text-white outline-none transition-all duration-300 cursor-pointer"
             >
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id} className="bg-zinc-900 text-white">
@@ -161,56 +155,57 @@ export const AddAnimalModal: React.FC<AddAnimalModalProps> = ({
           </div>
 
           {/* Image Upload Zone */}
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5 uppercase tracking-wider">
-              Animal Image (Cloudinary)
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+              Image
             </label>
             <div
-              onDragOver={(e) => e.preventDefault()}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className="w-full min-h-[160px] p-4 rounded-2xl border-2 border-dashed border-zinc-700/80 hover:border-emerald-500/60 bg-zinc-800/40 hover:bg-zinc-800/70 transition flex flex-col items-center justify-center cursor-pointer text-center relative group"
+              className={`w-full min-h-[180px] p-4 rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer flex flex-col items-center justify-center group ${
+                dragOver
+                  ? 'border-emerald-400/60 bg-emerald-500/[0.06] scale-[1.01]'
+                  : previewUrl
+                    ? 'border-emerald-500/30 bg-emerald-500/[0.03]'
+                    : 'border-zinc-800/60 bg-white/[0.02] hover:border-zinc-700/80 hover:bg-white/[0.04]'
+              }`}
             >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
 
               {previewUrl ? (
-                <div className="relative w-full h-[140px] flex items-center justify-center">
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="max-h-full max-w-full object-contain rounded-lg"
-                  />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-lg transition">
-                    <span className="text-xs text-white font-medium bg-zinc-900/80 px-3 py-1.5 rounded-full">
-                      Change Image
-                    </span>
+                <div className="relative w-full flex flex-col items-center gap-3">
+                  <div className="relative w-full h-[140px] flex items-center justify-center">
+                    <img src={previewUrl} alt="Preview" className="max-h-full max-w-full object-contain rounded-xl shadow-lg" />
                   </div>
+                  <div className="flex items-center gap-2 text-xs text-emerald-400">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span className="font-medium">{selectedFile?.name}</span>
+                  </div>
+                  <span className="text-[10px] text-zinc-600 group-hover:text-zinc-400 transition">Click to change</span>
                 </div>
               ) : (
-                <div className="flex flex-col items-center gap-2 text-zinc-400">
-                  <div className="p-3 rounded-full bg-zinc-800 text-zinc-300">
-                    <UploadCloud className="w-6 h-6" />
+                <div className="flex flex-col items-center gap-3 text-zinc-500 group-hover:text-zinc-400 transition">
+                  <div className="p-4 rounded-2xl bg-zinc-800/50 group-hover:bg-zinc-800 transition">
+                    <UploadCloud className="w-7 h-7" />
                   </div>
-                  <p className="text-xs font-medium text-zinc-200">
-                    Click to browse or drag and drop image
-                  </p>
-                  <p className="text-[11px] text-zinc-500">PNG, JPG, WEBP, GIF up to 10MB</p>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-zinc-300">
+                      {dragOver ? 'Drop it here!' : 'Click to browse or drag & drop'}
+                    </p>
+                    <p className="text-[11px] text-zinc-600 mt-1">PNG, JPG, WEBP, GIF up to 10MB</p>
+                  </div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-3 py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-sm transition flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full mt-2 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-bold text-sm transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/35 btn-press disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -218,7 +213,10 @@ export const AddAnimalModal: React.FC<AddAnimalModalProps> = ({
                 Uploading to Cloudinary...
               </>
             ) : (
-              'Create Animal'
+              <>
+                <Sparkles className="w-4 h-4" />
+                Create Animal
+              </>
             )}
           </button>
         </form>

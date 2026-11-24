@@ -9,7 +9,7 @@ import { AddAnimalModal } from '../components/AddAnimalModal';
 import { AddCategoryModal } from '../components/AddCategoryModal';
 import { api } from '../services/api';
 import { Category, Animal } from '../types';
-import { ImageOff, PlusCircle } from 'lucide-react';
+import { PawPrint, PlusCircle, SearchX, Inbox } from 'lucide-react';
 
 export default function Home() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -17,12 +17,9 @@ export default function Home() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
-
-  // Modals
   const [isAddAnimalOpen, setIsAddAnimalOpen] = useState<boolean>(false);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState<boolean>(false);
 
-  // Fetch all categories
   const fetchCategories = useCallback(async () => {
     try {
       const data = await api.getCategories();
@@ -32,71 +29,49 @@ export default function Home() {
     }
   }, []);
 
-  // Fetch animals with current filter
   const fetchAnimals = useCallback(async () => {
     try {
       setLoading(true);
       const data = await api.getAnimals(selectedCategoryId, searchQuery);
       setAnimals(data);
     } catch (err: any) {
-      toast.error('Unable to connect to NestJS backend');
+      toast.error('Unable to connect to backend');
       console.error('Failed to load animals:', err);
     } finally {
       setLoading(false);
     }
   }, [selectedCategoryId, searchQuery]);
 
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+  useEffect(() => { fetchCategories(); }, [fetchCategories]);
+  useEffect(() => { fetchAnimals(); }, [fetchAnimals]);
 
-  useEffect(() => {
-    fetchAnimals();
-  }, [fetchAnimals]);
-
-  // Handle adding a new category
   const handleAddCategory = async (name: string) => {
     const newCategory = await api.createCategory(name);
     toast.success(`Category "${newCategory.name}" created!`);
     await fetchCategories();
   };
 
-  // Handle uploading a new animal
-  const handleAddAnimal = async ({
-    name,
-    categoryId,
-    file,
-  }: {
-    name: string;
-    categoryId: string;
-    file: File;
-  }) => {
+  const handleAddAnimal = async ({ name, categoryId, file }: { name: string; categoryId: string; file: File }) => {
     const newAnimal = await api.createAnimal({ name, categoryId, file });
-    toast.success(`Animal "${newAnimal.name}" uploaded to Cloudinary!`);
+    toast.success(`"${newAnimal.name}" added successfully!`);
     await Promise.all([fetchCategories(), fetchAnimals()]);
   };
 
-  // Handle deleting an animal
   const handleDeleteAnimal = async (id: string) => {
     try {
       await api.deleteAnimal(id);
-      toast.success('Animal deleted successfully');
+      toast.success('Animal removed');
       setAnimals((prev) => prev.filter((a) => a.id !== id));
       await fetchCategories();
     } catch (err: any) {
-      toast.error(err.message || 'Failed to delete animal');
+      toast.error(err.message || 'Failed to delete');
     }
   };
 
-  // Total count across all categories
-  const totalCount = categories.reduce(
-    (acc, cat) => acc + (cat._count?.animals || 0),
-    0
-  );
+  const totalCount = categories.reduce((acc, cat) => acc + (cat._count?.animals || 0), 0);
 
   return (
-    <main className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col pb-16">
-      {/* Navigation and Category Bar */}
+    <main className="relative min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col pb-20">
       <Header
         categories={categories}
         selectedCategoryId={selectedCategoryId}
@@ -108,57 +83,78 @@ export default function Home() {
         onOpenAddCategory={() => setIsAddCategoryOpen(true)}
       />
 
-      {/* Animal Cards Gallery Grid */}
-      <section className="flex-1 mt-6">
+      {/* ── Gallery Section ── */}
+      <section className="flex-1 mt-4">
         {loading ? (
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 py-8">
-            {Array.from({ length: 10 }).map((_, idx) => (
-              <SkeletonCard key={idx} />
+          /* ── Loading Skeletons ── */
+          <div className="flex flex-wrap items-start justify-center gap-5 sm:gap-6 py-6">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <SkeletonCard key={idx} index={idx} />
             ))}
           </div>
         ) : animals.length > 0 ? (
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 py-8">
-            {animals.map((animal) => (
+          /* ── Animal Grid ── */
+          <div className="flex flex-wrap items-start justify-center gap-5 sm:gap-6 py-6">
+            {animals.map((animal, idx) => (
               <AnimalCard
                 key={animal.id}
                 animal={animal}
                 onDelete={handleDeleteAnimal}
+                index={idx}
               />
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-center gap-4 animate-fadeIn">
-            <div className="p-4 rounded-3xl bg-zinc-900 border border-zinc-800 text-zinc-500">
-              <ImageOff className="w-10 h-10" />
+          /* ── Empty State ── */
+          <div className="flex flex-col items-center justify-center py-24 text-center gap-5 animate-fadeIn">
+            <div className="relative">
+              <div className="p-6 rounded-3xl glass animate-pulseGlow">
+                {searchQuery ? (
+                  <SearchX className="w-12 h-12 text-zinc-600" />
+                ) : (
+                  <PawPrint className="w-12 h-12 text-zinc-600" />
+                )}
+              </div>
+              {/* Decorative ring */}
+              <div className="absolute inset-0 rounded-3xl border border-zinc-800/40 scale-[1.15] opacity-50" />
             </div>
-            <div className="max-w-md">
-              <h3 className="text-lg font-semibold text-zinc-200">No animals found</h3>
-              <p className="text-sm text-zinc-400 mt-1">
+            <div className="max-w-sm">
+              <h3 className="text-lg font-bold text-zinc-200">
+                {searchQuery ? 'No results found' : 'No animals yet'}
+              </h3>
+              <p className="text-sm text-zinc-500 mt-1.5 leading-relaxed">
                 {searchQuery
-                  ? `No animals match "${searchQuery}". Try a different search.`
-                  : 'There are no animals in this category yet. Click the button below to upload one!'}
+                  ? `Nothing matches "${searchQuery}". Try a different search term.`
+                  : 'Your collection is empty. Start by adding your first animal with an image!'}
               </p>
             </div>
-            <button
-              onClick={() => setIsAddAnimalOpen(true)}
-              className="mt-2 flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-sm transition shadow-lg shadow-emerald-500/20"
-            >
-              <PlusCircle className="w-4 h-4" />
-              Add Animal Now
-            </button>
+            {!searchQuery && (
+              <button
+                onClick={() => setIsAddAnimalOpen(true)}
+                className="mt-2 flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-bold text-sm transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/35 btn-press"
+              >
+                <PlusCircle className="w-4.5 h-4.5" />
+                Add Your First Animal
+              </button>
+            )}
           </div>
         )}
       </section>
 
-      {/* Add Animal Modal */}
+      {/* ── Footer ── */}
+      <footer className="mt-auto pt-10 pb-6 flex items-center justify-center">
+        <p className="text-[11px] text-zinc-700 tracking-wider">
+          Built with <span className="text-emerald-600">NestJS</span> · <span className="text-cyan-600">Next.js</span> · <span className="text-indigo-600">Neon</span> · <span className="text-orange-600">Cloudinary</span>
+        </p>
+      </footer>
+
+      {/* ── Modals ── */}
       <AddAnimalModal
         isOpen={isAddAnimalOpen}
         categories={categories}
         onClose={() => setIsAddAnimalOpen(false)}
         onSubmit={handleAddAnimal}
       />
-
-      {/* Add Category Modal */}
       <AddCategoryModal
         isOpen={isAddCategoryOpen}
         onClose={() => setIsAddCategoryOpen(false)}

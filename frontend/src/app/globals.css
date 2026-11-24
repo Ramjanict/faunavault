@@ -3,32 +3,155 @@
 @tailwind utilities;
 
 :root {
-  --background: #050505;
-  --foreground: #ffffff;
+  --background: #030303;
+  --foreground: #f4f4f5;
+  --accent: #10b981;
+  --accent-glow: rgba(16, 185, 129, 0.15);
 }
 
+/* ───── Base ───── */
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* Custom scrollbar for modern aesthetics */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* ───── Custom Scrollbar ───── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #27272a; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+/* ───── Animations ───── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.08); }
+  50%      { box-shadow: 0 0 40px rgba(16, 185, 129, 0.18); }
+}
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
-::-webkit-scrollbar-track {
-  background: #0f0f0f;
+.animate-fadeIn      { animation: fadeIn 0.4s ease-out both; }
+.animate-fadeInScale { animation: fadeInScale 0.3s ease-out both; }
+.animate-shimmer    { animation: shimmer 2s linear infinite;
+                      background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%);
+                      background-size: 200% 100%; }
+.animate-float      { animation: float 4s ease-in-out infinite; }
+.animate-pulseGlow  { animation: pulseGlow 3s ease-in-out infinite; }
+
+/* ───── Glassmorphism Utility ───── */
+.glass {
+  background: rgba(24, 24, 27, 0.55);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(63, 63, 70, 0.4);
+}
+.glass-light {
+  background: rgba(39, 39, 42, 0.35);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(63, 63, 70, 0.3);
 }
 
-::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 4px;
+/* ───── Gradient Text ───── */
+.text-gradient {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 40%, #6ee7b7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-warm {
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+/* ───── Animated Background Mesh ───── */
+.bg-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bg-mesh::before,
+.bg-mesh::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.12;
+}
+.bg-mesh::before {
+  width: 600px; height: 600px;
+  top: -120px; right: -100px;
+  background: radial-gradient(circle, #10b981, transparent);
+  animation: float 12s ease-in-out infinite;
+}
+.bg-mesh::after {
+  width: 500px; height: 500px;
+  bottom: -80px; left: -60px;
+  background: radial-gradient(circle, #6366f1, transparent);
+  animation: float 15s ease-in-out infinite reverse;
+}
+
+/* ───── Card Hover Glow Ring ───── */
+.card-glow {
+  position: relative;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, transparent, transparent);
+  z-index: -1;
+  transition: background 0.35s ease;
+}
+.card-glow:hover::before {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(99, 102, 241, 0.15));
+}
+.card-glow:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(16, 185, 129, 0.12),
+              0 0 0 1px rgba(16, 185, 129, 0.15);
+}
+
+/* ───── Button Press Effect ───── */
+.btn-press { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.btn-press:active { transform: scale(0.95); }
+
+/* ───── Noise Overlay ───── */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }

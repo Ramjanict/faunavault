@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, FolderPlus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -17,7 +17,6 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
 }) => {
   const [categoryName, setCategoryName] = useState('');
   const [loading, setLoading] = useState(false);
-  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -25,8 +24,12 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
     };
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
     }
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -34,10 +37,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = categoryName.trim();
-    if (!trimmed) {
-      toast.error('Please provide a category name');
-      return;
-    }
+    if (!trimmed) { toast.error('Please provide a category name'); return; }
 
     try {
       setLoading(true);
@@ -52,56 +52,65 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+
+      {/* Modal */}
       <div
-        ref={modalRef}
-        className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative"
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-md glass rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/40 animate-fadeInScale"
       >
+        {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+          className="absolute top-4 right-4 p-2 rounded-xl hover:bg-white/[0.06] text-zinc-500 hover:text-white transition"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <FolderPlus className="w-6 h-6" />
+        {/* Header */}
+        <div className="flex items-center gap-3.5 mb-7">
+          <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500/15 to-purple-500/10 border border-indigo-500/20">
+            <FolderPlus className="w-6 h-6 text-indigo-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white capitalize">Add Category</h2>
-            <p className="text-xs text-zinc-400">Create a classification for animals</p>
+            <h2 className="text-xl font-bold text-white">New Category</h2>
+            <p className="text-xs text-zinc-500 mt-0.5">Classify your animal collection</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5 uppercase tracking-wider">
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
               Category Name
             </label>
             <input
               type="text"
               value={categoryName}
               onChange={(e) => setCategoryName(e.target.value)}
-              placeholder="e.g. Amphibian, Reptile"
+              placeholder="e.g. Amphibian, Reptile, Mammal"
               required
               disabled={loading}
-              className="w-full px-4 py-3 rounded-xl bg-zinc-800/80 border border-zinc-700/60 text-white placeholder-zinc-500 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition text-sm"
+              className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-zinc-800/80 hover:border-zinc-700 focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/15 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-300"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-sm transition flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full mt-2 py-3.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white font-bold text-sm transition-all duration-300 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/35 btn-press disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
-                <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Saving...
               </>
             ) : (
-              'Save Category'
+              <>
+                <FolderPlus className="w-4 h-4" />
+                Create Category
+              </>
             )}
           </button>
         </form>
