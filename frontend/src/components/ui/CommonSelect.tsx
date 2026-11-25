@@ -45,12 +45,12 @@ const CommonSelect = <T extends string>({
         <SelectValue placeholder={placeholder || "Select an option"} />
       </SelectTrigger>
 
-      <SelectContent className="bg-white border border-gray-100 rounded-xl shadow-lg py-1 overflow-hidden z-[9999]">
+      <SelectContent className="bg-white border border-gray-100 rounded-xl shadow-xl py-1.5 overflow-hidden z-[9999] min-w-[var(--radix-select-trigger-width)]">
         {item.map((option, index) => (
           <SelectItem
             key={option.value + index}
             value={option.value}
-            className="cursor-pointer px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 data-[state=checked]:bg-emerald-50 data-[state=checked]:text-emerald-700 data-[state=checked]:font-semibold rounded-lg mx-1 my-0.5 transition-colors duration-150"
+            className="cursor-pointer pl-10 pr-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 data-[state=checked]:bg-emerald-50 data-[state=checked]:text-emerald-700 data-[state=checked]:font-semibold rounded-lg mx-1 my-0.5 transition-colors duration-150"
           >
             {option.label}
           </SelectItem>
