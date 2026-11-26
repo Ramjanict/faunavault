@@ -16,23 +16,27 @@ A high-performance animal catalog and categorization web platform upgraded with 
 
 ---
 
-## 🔑 Project & Cloud Credentials
+## 🔑 Environment Configuration & Secrets
+
+> [!IMPORTANT]
+> Never commit `.env` files or secret keys to GitHub. Real secrets should be kept locally in your `.env` file (ignored by Git) and configured in the deployment platform dashboards (Render & Vercel).
 
 ### 1. Database (Neon Serverless PostgreSQL)
 - **Provider**: [Neon](https://neon.tech/)
-- **Connection URI**:
+- **Connection URI Format**:
   ```text
-  postgresql://neondb_owner:npg_K29uVNgsSinL@ep-long-surf-be8i6erx-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+  postgresql://<username>:<password>@<ep-pooler-host>/neondb?sslmode=require&channel_binding=require
   ```
 
 ### 2. Media CDN (Cloudinary)
 - **Provider**: [Cloudinary](https://cloudinary.com/)
-- **Cloud Name**: `ramjan`
-- **API Key**: `839226347835865`
-- **API Secret**: `JrKNyYxIiwOtyuTYa6ykVwEG-gk`
+- **Configuration Keys**:
+  - `CLOUDINARY_CLOUD_NAME`
+  - `CLOUDINARY_API_KEY`
+  - `CLOUDINARY_API_SECRET`
 - **Environment Variable Format**:
   ```text
-  CLOUDINARY_URL=cloudinary://839226347835865:JrKNyYxIiwOtyuTYa6ykVwEG-gk@ramjan
+  CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
   ```
 
 ---
@@ -108,12 +112,12 @@ npm run build
 npm run start:prod
 ```
 
-#### Backend Environment Variables (`backend/.env`)
+#### Backend Environment Variables (`backend/.env` - copy from `backend/.env.example`)
 ```env
-DATABASE_URL="postgresql://neondb_owner:npg_K29uVNgsSinL@ep-long-surf-be8i6erx-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-CLOUDINARY_CLOUD_NAME="ramjan"
-CLOUDINARY_API_KEY="839226347835865"
-CLOUDINARY_API_SECRET="JrKNyYxIiwOtyuTYa6ykVwEG-gk"
+DATABASE_URL="postgresql://<user>:<password>@<host>/neondb?sslmode=require&channel_binding=require"
+CLOUDINARY_CLOUD_NAME="your_cloud_name"
+CLOUDINARY_API_KEY="your_api_key"
+CLOUDINARY_API_SECRET="your_api_secret"
 PORT=5000
 FRONTEND_URL="https://faunavault.vercel.app"
 ```
